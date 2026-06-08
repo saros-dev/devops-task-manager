@@ -1,4 +1,4 @@
-name: CD Pipeline
+name: CI-CD Pipeline
 
 on:
   push:
@@ -9,44 +9,61 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Checkout code
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK
+      # 2. Setup Java
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
 
+      # 3. Build Spring Boot app
       - name: Build with Maven
         run: mvn -f backend/taskmanager/pom.xml clean package -DskipTests
 
+      # 4. Docker login
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # 5. Build Docker image (versioned)
       - name: Build Docker Image
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend:${{ github.sha }} backend/taskmanager
-          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend:${{ github.sha }} \
-                      ${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend:latest
+          IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend
+          TAG=${{ github.sha }}
 
+          docker build -t $IMAGE:$TAG backend/taskmanager
+          docker tag $IMAGE:$TAG $IMAGE:latest
+
+      # 6. Push Docker image
       - name: Push Docker Image
         run: |
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend:${{ github.sha }}
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend:latest
+          IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend
+          TAG=${{ github.sha }}
 
+          docker push $IMAGE:$TAG
+          docker push $IMAGE:latest
+
+      # 7. Setup kubectl
       - name: Setup kubectl
         uses: azure/setup-kubectl@v4
 
+      # 8. Configure kubeconfig
       - name: Configure kubeconfig
         run: |
           mkdir -p ~/.kube
           echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
 
+      # 9. Deploy to Kubernetes
       - name: Deploy to Kubernetes
         run: |
-          kubectl set image deployment/backend backend=${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend:${{ github.sha }} -n taskmanager
+          IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend
+          TAG=${{ github.sha }}
+
+          kubectl set image deployment/backend backend=$IMAGE:$TAG -n taskmanager
           kubectl rollout status deployment/backend -n taskmanager
