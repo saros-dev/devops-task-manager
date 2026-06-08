@@ -1,11 +1,11 @@
-name: CI-CD Pipeline
+name: CD Pipeline
 
 on:
   push:
     branches: ["main"]
 
 jobs:
-  build-and-push:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -27,15 +27,26 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build Docker Image (versioned)
+      - name: Build Docker Image
         run: |
-          IMAGE_TAG=${{ github.sha }}
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend:$IMAGE_TAG backend/taskmanager
-          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend:$IMAGE_TAG \
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend:${{ github.sha }} backend/taskmanager
+          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend:${{ github.sha }} \
                       ${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend:latest
 
       - name: Push Docker Image
         run: |
-          IMAGE_TAG=${{ github.sha }}
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend:$IMAGE_TAG
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend:${{ github.sha }}
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend:latest
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl set image deployment/backend backend=${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend:${{ github.sha }} -n taskmanager
+          kubectl rollout status deployment/backend -n taskmanager
