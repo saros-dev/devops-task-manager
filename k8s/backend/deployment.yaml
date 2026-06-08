@@ -3,8 +3,11 @@ kind: Deployment
 metadata:
   name: backend
   namespace: taskmanager
+  labels:
+    app: backend
+
 spec:
-  replicas: 1
+  replicas: 2
 
   strategy:
     type: RollingUpdate
@@ -24,7 +27,10 @@ spec:
     spec:
       containers:
         - name: backend
-          image: YOUR_DOCKERHUB_USERNAME/taskmanager-backend:latest
+
+          # 🔥 IMPORTANT:
+          # CI/CD overrides this with: IMAGE:TAG (git sha)
+          image: devops-task-manager-backend:PLACEHOLDER
           imagePullPolicy: Always
 
           ports:
@@ -38,10 +44,41 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: db-secret
-                  key: SPRING_DATASOURCE_USERNAME
+                  key: username
 
             - name: SPRING_DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: db-secret
-                  key: SPRING_DATASOURCE_PASSWORD
+                  key: password
+
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8081
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 3
+
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8081
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep 10"]
