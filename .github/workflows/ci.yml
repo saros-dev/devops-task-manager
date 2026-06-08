@@ -1,23 +1,24 @@
 name: CI Pipeline
 
 on:
-  push:
+  pull_request:
     branches: ["main"]
 
 jobs:
-  test-build:
+  test:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-java@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
 
-      - name: Test
-        run: mvn -f backend/taskmanager/pom.xml test
-
-      - name: Build
-        run: mvn -f backend/taskmanager/pom.xml clean package -DskipTests
+      - name: Run tests
+        run: |
+          cd backend/taskmanager
+          mvn test
