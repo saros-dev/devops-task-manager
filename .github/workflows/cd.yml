@@ -25,7 +25,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -36,13 +35,8 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            sarosdev/taskmanager-backend:${{ github.sha }}
-            sarosdev/taskmanager-backend:latest
-
-      - name: Push Image
-        run: |
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend:${{ github.sha }}
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend:latest
 
       - name: Setup kubectl
         uses: azure/setup-kubectl@v4
@@ -52,12 +46,6 @@ jobs:
           mkdir -p ~/.kube
           echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
 
-#      - name: Deploy to Kubernetes
-#        run: |
-#          kubectl set image deployment/backend \
-#            backend=${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend:${{ github.sha }} \
-#            -n taskmanager
-
-      - name: Rollout Status (manual check)
+      - name: Rollout Status
         run: |
           kubectl rollout status deployment/backend -n taskmanager
