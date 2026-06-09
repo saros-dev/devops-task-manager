@@ -36,3 +36,20 @@ jobs:
         run: |
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend:${{ github.sha }}
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend:latest
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl set image deployment/backend \
+            backend=${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend:${{ github.sha }} \
+            -n taskmanager
+
+          kubectl rollout status deployment/backend -n taskmanager
+
