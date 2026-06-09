@@ -9,7 +9,7 @@ spec:
   source:
     repoURL: https://github.com/saros-dev/devops-task-manager
     targetRevision: main
-    path: k8s
+    path: k8s/overlays/dev
 
   destination:
     server: https://kubernetes.default.svc
