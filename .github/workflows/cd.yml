@@ -50,6 +50,7 @@ jobs:
 #          kubectl set image deployment/backend \
 #            backend=${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend:${{ github.sha }} \
  #         -n taskmanager
-
+       - name: Rollout Status (manual check)
+         run: |
           kubectl rollout status deployment/backend -n taskmanager
 
