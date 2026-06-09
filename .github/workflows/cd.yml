@@ -38,14 +38,3 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend:${{ github.sha }}
             ${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend:latest
 
-      - name: Setup kubectl
-        uses: azure/setup-kubectl@v4
-
-      - name: Configure kubeconfig
-        run: |
-          mkdir -p ~/.kube
-          echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
-
-      - name: Rollout Status
-        run: |
-          kubectl rollout status deployment/backend -n taskmanager

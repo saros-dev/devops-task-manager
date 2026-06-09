@@ -3,14 +3,13 @@ kind: Application
 metadata:
   name: taskmanager
   namespace: argocd
-
 spec:
   project: default
 
   source:
     repoURL: https://github.com/saros-dev/devops-task-manager
     targetRevision: main
-    path: k8s/helm/taskmanager
+    path: k8s
 
   destination:
     server: https://kubernetes.default.svc
@@ -20,3 +19,5 @@ spec:
     automated:
       prune: true
       selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
