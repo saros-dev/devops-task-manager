@@ -4,16 +4,21 @@ metadata:
   name: taskmanager
   namespace: argocd
 spec:
+  destination:
+    namespace: taskmanager
+    server: https://kubernetes.default.svc
+
   project: default
 
   source:
     repoURL: https://github.com/saros-dev/devops-task-manager
     targetRevision: main
-    path: k8s/overlays/dev
+    path: k8s/helm/taskmanager
 
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: taskmanager
+    helm:
+      parameters:
+        - name: image.tag
+          value: "latest"   # فعلاً placeholder (بعداً حذف می‌کنیم)
 
   syncPolicy:
     automated:

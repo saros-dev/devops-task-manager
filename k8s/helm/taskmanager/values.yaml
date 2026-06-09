@@ -1,7 +1,6 @@
 image:
   repository: sarosdev/taskmanager-backend
-  tag: latest
-
+  tag: "latest"
 replicaCount: 2
 
 service:
