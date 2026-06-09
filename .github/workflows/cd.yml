@@ -36,9 +36,8 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend:${{ github.sha }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend:latest
-
+            sarosdev/taskmanager-backend:${{ github.sha }}
+            sarosdev/taskmanager-backend:latest
 
       - name: Push Image
         run: |
