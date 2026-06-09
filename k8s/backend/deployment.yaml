@@ -29,7 +29,7 @@ spec:
       containers:
         - name: backend
 
-          image: sarosdev/task-manager-backend
+          image: sarosdev/task-manager-backend:latest
           imagePullPolicy: Always
 
           ports:
