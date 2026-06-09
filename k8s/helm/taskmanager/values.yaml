@@ -1,0 +1,16 @@
+image:
+  repository: sarosdev/taskmanager-backend
+  tag: latest
+
+replicaCount: 2
+
+service:
+  port: 8081
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
