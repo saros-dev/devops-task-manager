@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: taskmanager
+  namespace: argocd
+
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/saros-dev/devops-task-manager
+    targetRevision: main
+    path: k8s/helm/taskmanager
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: taskmanager
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
