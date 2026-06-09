@@ -15,7 +15,24 @@ spec:
       containers:
         - name: backend
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://postgres:5432/taskmanager
+
+            - name: SPRING_DATASOURCE_USERNAME
+              value: postgres
+
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: postgres
+
+            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+              value: update
+
           ports:
             - containerPort: 8081
+
+
+
           resources:
 {{ toYaml .Values.resources | indent 12 }}

@@ -1,20 +1,16 @@
-# مرحله build
 FROM maven:3.9-eclipse-temurin-21 AS build
 
 WORKDIR /app
 
-COPY pom.xml .
-COPY src ./src
+COPY backend/taskmanager/pom.xml ./pom.xml
+COPY backend/taskmanager/src ./src
 
-RUN mvn clean package -DskipTests
+RUN mvn -f pom.xml clean package -DskipTests
 
-# مرحله اجرا
 FROM eclipse-temurin:21-jdk
 
 WORKDIR /app
 
 COPY --from=build /app/target/*.jar app.jar
-
-EXPOSE 8081
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
