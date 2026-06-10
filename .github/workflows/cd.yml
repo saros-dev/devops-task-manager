@@ -1,39 +1,76 @@
-name: CD Pipeline
+name: CD Pipeline (GitOps Safe)
 
 on:
-  workflow_dispatch:
-  push:
-    branches: ["main"]
-    paths:
-      - "k8s/helm/**"
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types:
+      - completed
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   update-manifest:
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_commit.author.name != 'github-actions[bot]'
+
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      # 1. Checkout repo
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Set image tag
-        run: echo "IMAGE_TAG=${{ github.sha }}" >> $GITHUB_ENV
-
-      - name: Update values.yaml
+      # 2. Extract image tag (commit SHA from CI)
+      - name: Set IMAGE_TAG
         run: |
-          sed -i "s|tag: .*|tag: \"${IMAGE_TAG}\"|g" k8s/helm/taskmanager/values.yaml
+          echo "IMAGE_TAG=${{ github.event.workflow_run.head_sha }}" >> $GITHUB_ENV
 
-      - name: Commit changes
+      # 3. Configure git
+      - name: Git config
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
+      # 4. Create branch
+      - name: Create branch
+        run: |
+          BRANCH="ci/update-image-${IMAGE_TAG}"
+          echo "BRANCH=$BRANCH" >> $GITHUB_ENV
+          git checkout -b $BRANCH
+
+      # 5. Update Helm values safely
+      - name: Update image tag
+        run: |
+          FILE="k8s/helm/taskmanager/values.yaml"
+
+          # replace only image tag line safely
+          sed -i "s|tag:.*|tag: \"${IMAGE_TAG}\"|g" $FILE
+
+      # 6. Commit changes (idempotent)
+      - name: Commit changes
+        run: |
           git add k8s/helm/taskmanager/values.yaml
 
-          git commit -m "ci: update image tag ${IMAGE_TAG} [skip ci]" || echo "no changes"
+          git commit -m "chore: update image to ${IMAGE_TAG} [skip ci]" || echo "No changes to commit"
 
-      - name: Push changes
-        run: git push origin main
+      # 7. Push branch (NOT main!)
+      - name: Push branch
+        run: |
+          git push origin $BRANCH
+
+      # 8. Create PR safely (no duplicates)
+      - name: Create Pull Request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create \
+            --title "chore: deploy image ${IMAGE_TAG}" \
+            --body "Auto-generated PR from CD pipeline (GitOps safe)" \
+            --base main \
+            --head $BRANCH \
+          || echo "PR already exists"

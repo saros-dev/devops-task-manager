@@ -4,21 +4,35 @@ on:
   push:
     branches: ["main"]
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      # 1. Checkout code
+      - name: Checkout
+        uses: actions/checkout@v4
 
+      # 2. Setup Java
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
+          cache: maven
 
-      - name: Build
+      # 3. Build application
+      - name: Build with Maven
         run: mvn -f backend/taskmanager/pom.xml clean package -DskipTests
 
-      - name: Docker build
-        run: echo "build only"
+      # 4. Optional: Run tests (if you want later)
+      # - name: Test
+      #   run: mvn test -f backend/taskmanager/pom.xml
+
+      # 5. Docker build (CI only, no push)
+      - name: Docker build (verification only)
+        run: |
+          docker build -t taskmanager-backend:ci backend/taskmanager
