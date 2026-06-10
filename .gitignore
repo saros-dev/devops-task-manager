@@ -1,0 +1,39 @@
+# Java / Spring Boot
+target/
+*.jar
+*.war
+*.class
+
+# Logs
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.swp
+
+# OS
+.DS_Store
+
+# Maven / Gradle
+.mvn/
+.gradle/
+build/
+
+# Kubernetes secrets (خیلی مهم)
+*-secret.yaml
+secret.yaml
+**/secret.yaml
+kubeconfig*
+*.kubeconfig
+
+# Env files
+.env
+.env.*
+
+# Docker
+docker-compose.override.yml
+
+# temp
+tmp/
