@@ -2,10 +2,10 @@ FROM maven:3.9-eclipse-temurin-21 AS build
 
 WORKDIR /app
 
-COPY backend/taskmanager/pom.xml ./pom.xml
-COPY backend/taskmanager/src ./src
+COPY pom.xml .
+COPY src ./src
 
-RUN mvn -f pom.xml clean package -DskipTests
+RUN mvn clean package -DskipTests
 
 FROM eclipse-temurin:21-jdk
 
