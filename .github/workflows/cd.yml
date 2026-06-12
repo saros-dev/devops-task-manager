@@ -2,7 +2,8 @@ name: CD Pipeline (GitOps Safe)
 
 on:
   workflow_run:
-    workflows: ["CI Pipeline"]
+    workflows:
+      - CI Pipeline
     types:
       - completed
 
@@ -13,64 +14,58 @@ permissions:
 jobs:
   update-manifest:
     if: >
-      github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.head_commit.author.name != 'github-actions[bot]'
+      github.event.workflow_run.conclusion == 'success'
 
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout repo
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # 2. Extract image tag (commit SHA from CI)
-      - name: Set IMAGE_TAG
+      - name: Set Variables
         run: |
           echo "IMAGE_TAG=${{ github.event.workflow_run.head_sha }}" >> $GITHUB_ENV
 
-      # 3. Configure git
-      - name: Git config
+      - name: Configure Git
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-      # 4. Create branch
-      - name: Create branch
+      - name: Update Helm Tag
+        run: |
+          sed -i "s|tag: .*|tag: \"${IMAGE_TAG}\"|g" k8s/helm/taskmanager/values.yaml
+
+      - name: Check For Changes
+        run: |
+          git diff --quiet && echo "NO_CHANGES=true" >> $GITHUB_ENV || echo "NO_CHANGES=false" >> $GITHUB_ENV
+
+      - name: Create Branch
+        if: env.NO_CHANGES == 'false'
         run: |
           BRANCH="ci/update-image-${IMAGE_TAG}"
           echo "BRANCH=$BRANCH" >> $GITHUB_ENV
           git checkout -b $BRANCH
 
-      # 5. Update Helm values safely
-      - name: Update image tag
-        run: |
-          FILE="k8s/helm/taskmanager/values.yaml"
-
-          # replace only image tag line safely
-          sed -i "s|tag:.*|tag: \"${IMAGE_TAG}\"|g" $FILE
-
-      # 6. Commit changes (idempotent)
-      - name: Commit changes
+      - name: Commit Changes
+        if: env.NO_CHANGES == 'false'
         run: |
           git add k8s/helm/taskmanager/values.yaml
+          git commit -m "chore: update image tag ${IMAGE_TAG}"
 
-          git commit -m "chore: update image to ${IMAGE_TAG} [skip ci]" || echo "No changes to commit"
-
-      # 7. Push branch (NOT main!)
-      - name: Push branch
+      - name: Push Branch
+        if: env.NO_CHANGES == 'false'
         run: |
           git push origin $BRANCH
 
-      # 8. Create PR safely (no duplicates)
       - name: Create Pull Request
+        if: env.NO_CHANGES == 'false'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh pr create \
             --title "chore: deploy image ${IMAGE_TAG}" \
-            --body "Auto-generated PR from CD pipeline (GitOps safe)" \
+            --body "Automated GitOps deployment PR" \
             --base main \
-            --head $BRANCH \
-          || echo "PR already exists"
+            --head $BRANCH

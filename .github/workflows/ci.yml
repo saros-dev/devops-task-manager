@@ -2,7 +2,10 @@ name: CI Pipeline
 
 on:
   push:
-    branches: ["main"]
+    branches:
+      - main
+    paths-ignore:
+      - 'k8s/helm/**'
 
 permissions:
   contents: read
@@ -12,11 +15,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout code
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2. Setup Java
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
@@ -24,15 +25,9 @@ jobs:
           java-version: 21
           cache: maven
 
-      # 3. Build application
       - name: Build with Maven
         run: mvn -f backend/taskmanager/pom.xml clean package -DskipTests
 
-      # 4. Optional: Run tests (if you want later)
-      # - name: Test
-      #   run: mvn test -f backend/taskmanager/pom.xml
-
-      # 5. Docker build (CI only, no push)
-      - name: Docker build (verification only)
+      - name: Docker Build Verification
         run: |
           docker build -t taskmanager-backend:ci backend/taskmanager
