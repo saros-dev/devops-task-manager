@@ -1,9 +1,8 @@
-name: CD Pipeline (GitOps Safe)
+name: CD Pipeline (GitOps)
 
 on:
   workflow_run:
-    workflows:
-      - CI Pipeline
+    workflows: ["CI Pipeline"]
     types:
       - completed
 
@@ -13,18 +12,17 @@ permissions:
 
 jobs:
   update-manifest:
-    if: >
-      github.event.workflow_run.conclusion == 'success'
+    if: github.event.workflow_run.conclusion == 'success'
 
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repo
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Set Variables
+      - name: Set IMAGE_TAG
         run: |
           echo "IMAGE_TAG=${{ github.event.workflow_run.head_sha }}" >> $GITHUB_ENV
 
@@ -33,39 +31,38 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-      - name: Update Helm Tag
-        run: |
-          sed -i "s|tag: .*|tag: \"${IMAGE_TAG}\"|g" k8s/helm/taskmanager/values.yaml
-
-      - name: Check For Changes
-        run: |
-          git diff --quiet && echo "NO_CHANGES=true" >> $GITHUB_ENV || echo "NO_CHANGES=false" >> $GITHUB_ENV
-
-      - name: Create Branch
-        if: env.NO_CHANGES == 'false'
+      - name: Create branch
         run: |
           BRANCH="ci/update-image-${IMAGE_TAG}"
           echo "BRANCH=$BRANCH" >> $GITHUB_ENV
           git checkout -b $BRANCH
 
-      - name: Commit Changes
-        if: env.NO_CHANGES == 'false'
+      - name: Update Helm image tag
+        run: |
+          sed -i "s|tag: .*|tag: \"${IMAGE_TAG}\"|g" k8s/helm/taskmanager/values.yaml
+
+      - name: Check changes
+        run: |
+          git diff --quiet && echo "NO_CHANGE=true" >> $GITHUB_ENV || echo "NO_CHANGE=false" >> $GITHUB_ENV
+
+      - name: Commit changes
+        if: env.NO_CHANGE == 'false'
         run: |
           git add k8s/helm/taskmanager/values.yaml
-          git commit -m "chore: update image tag ${IMAGE_TAG}"
+          git commit -m "chore: update image ${IMAGE_TAG}"
 
-      - name: Push Branch
-        if: env.NO_CHANGES == 'false'
+      - name: Push branch
+        if: env.NO_CHANGE == 'false'
         run: |
           git push origin $BRANCH
 
-      - name: Create Pull Request
-        if: env.NO_CHANGES == 'false'
+      - name: Create PR
+        if: env.NO_CHANGE == 'false'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh pr create \
-            --title "chore: deploy image ${IMAGE_TAG}" \
-            --body "Automated GitOps deployment PR" \
+            --title "deploy: ${IMAGE_TAG}" \
+            --body "auto deploy via ArgoCD GitOps" \
             --base main \
-            --head $BRANCH
+            --head $BRANCH || echo "PR exists"

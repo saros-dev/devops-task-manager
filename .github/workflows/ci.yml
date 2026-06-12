@@ -2,10 +2,9 @@ name: CI Pipeline
 
 on:
   push:
-    branches:
-      - main
+    branches: ["main"]
     paths-ignore:
-      - 'k8s/helm/**'
+      - "k8s/helm/**"
 
 permissions:
   contents: read
@@ -28,6 +27,17 @@ jobs:
       - name: Build with Maven
         run: mvn -f backend/taskmanager/pom.xml clean package -DskipTests
 
-      - name: Docker Build Verification
+      # 🐳 Docker Login
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # 🐳 Build + Push Image
+      - name: Build & Push Image
         run: |
-          docker build -t taskmanager-backend:ci backend/taskmanager
+          IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend:${{ github.sha }}
+
+          docker build -t $IMAGE backend/taskmanager
+          docker push $IMAGE

@@ -15,6 +15,9 @@ spec:
     helm:
       valueFiles:
         - values.yaml
+      parameters:
+        - name: image.repository
+          value: sarosdev/taskmanager-backend
 
   destination:
     server: https://kubernetes.default.svc
@@ -24,5 +27,7 @@ spec:
     automated:
       prune: true
       selfHeal: true
+
     syncOptions:
       - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true
