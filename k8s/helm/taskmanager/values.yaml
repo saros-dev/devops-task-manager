@@ -1,6 +1,6 @@
 image:
   repository: sarosdev/taskmanager-backend
-  tag: "41c8985e214dd3eb06a281f3976be30f9fb88520"
+  tag: "cfd4d910eb27baa627eefd1cc3091e60b7f8f94f"
 replicaCount: 2
 
 service:
