@@ -14,8 +14,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-
+          image: "{{ .Values.image.repository }}@{{ .Values.image.digest }}"
           env:
             - name: SPRING_DATASOURCE_URL
               value: jdbc:postgresql://postgres:5432/taskmanager

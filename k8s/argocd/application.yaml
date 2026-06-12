@@ -12,13 +12,6 @@ spec:
     targetRevision: main
     path: k8s/helm/taskmanager
 
-    helm:
-      valueFiles:
-        - values.yaml
-      parameters:
-        - name: image.repository
-          value: sarosdev/taskmanager-backend
-
   destination:
     server: https://kubernetes.default.svc
     namespace: taskmanager
@@ -27,7 +20,5 @@ spec:
     automated:
       prune: true
       selfHeal: true
-
     syncOptions:
       - CreateNamespace=true
-      - ApplyOutOfSyncOnly=true
