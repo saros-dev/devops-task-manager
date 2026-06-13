@@ -1,7 +1,6 @@
 image:
   repository: sarosdev/taskmanager-backend
-  digest: ""
-
+  digest: sha256:4b5900ed6971d1c79844e14d698c5898a8e61d7cf5b97d743bf78dd78abaeba3
 replicaCount: 2
 
 service:
