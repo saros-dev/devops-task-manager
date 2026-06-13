@@ -14,7 +14,9 @@ spec:
     spec:
       containers:
         - name: backend
-          image: "{{ .Values.image.repository }}@{{ .Values.image.digest }}"
+          image: "{{ .Values.image.repository }}"
+          imagePullPolicy: Always
+
           env:
             - name: SPRING_DATASOURCE_URL
               value: jdbc:postgresql://postgres:5432/taskmanager
@@ -30,8 +32,6 @@ spec:
 
           ports:
             - containerPort: 8081
-
-
 
           resources:
 {{ toYaml .Values.resources | indent 12 }}

@@ -1,6 +1,10 @@
 image:
   repository: sarosdev/taskmanager-backend
+<<<<<<< HEAD
   digest: ""
+=======
+
+>>>>>>> 8cf20a6 (fix image format for argocd image updater)
 replicaCount: 2
 
 service:
