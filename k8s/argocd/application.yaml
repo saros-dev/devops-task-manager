@@ -3,7 +3,10 @@ kind: Application
 metadata:
   name: taskmanager
   namespace: argocd
-
+  annotations:
+    argocd-image-updater.argoproj.io/image-list: backend=sarosdev/taskmanager-backend
+    argocd-image-updater.argoproj.io/backend.update-strategy: digest
+    argocd-image-updater.argoproj.io/write-back-method: git
 spec:
   project: default
 
@@ -11,6 +14,9 @@ spec:
     repoURL: https://github.com/saros-dev/devops-task-manager.git
     targetRevision: main
     path: k8s/helm/taskmanager
+    helm:
+      valueFiles:
+        - values.yaml
 
   destination:
     server: https://kubernetes.default.svc
@@ -20,5 +26,3 @@ spec:
     automated:
       prune: true
       selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
