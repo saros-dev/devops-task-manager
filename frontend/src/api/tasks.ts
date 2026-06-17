@@ -1,5 +1,10 @@
 import api from "./axios";
+import type { Task } from "../types/task";
 
-export const getTasks = () => api.get("/api/tasks");
-export const createTask = (data: any) => api.post("/api/tasks", data);
-export const deleteTask = (id: number) => api.delete(`/api/tasks/${id}`);
+export const getTasks = () => api.get<Task[]>("/tasks");
+
+export const createTask = (data: Task) =>
+  api.post("/tasks", data);
+
+export const deleteTask = (id: number) =>
+  api.delete(`/tasks/${id}`);
