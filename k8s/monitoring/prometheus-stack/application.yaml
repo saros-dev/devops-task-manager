@@ -3,6 +3,7 @@ kind: Application
 metadata:
   name: monitoring
   namespace: argocd
+
 spec:
   project: default
 
@@ -10,18 +11,32 @@ spec:
     repoURL: https://prometheus-community.github.io/helm-charts
     chart: kube-prometheus-stack
     targetRevision: 58.0.0
+
     helm:
       values: |
+        # 🚫 Disable admission webhooks (fix stuck jobs + CRD issues)
+        admissionWebhooks:
+          enabled: false
+
+        prometheusOperator:
+          admissionWebhooks:
+            enabled: false
+            patch:
+              enabled: false
+
+        # 🚀 DEV MODE: keep only core monitoring
+        kube-state-metrics:
+          enabled: false   # <<< مهم‌ترین fix تو
 
         grafana:
           enabled: true
 
         prometheus:
           prometheusSpec:
-            retention: 7d
+            retention: 2d   # سبک‌تر از 7d برای dev
 
         alertmanager:
-          enabled: true
+          enabled: false   # optional (برای dev خاموشش کن)
 
         nodeExporter:
           enabled: true
@@ -34,5 +49,7 @@ spec:
     automated:
       prune: true
       selfHeal: true
+
     syncOptions:
       - CreateNamespace=true
+      - ServerSideApply=true

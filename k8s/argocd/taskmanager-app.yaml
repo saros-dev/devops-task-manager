@@ -1,28 +1,28 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: monitoring
+  name: taskmanager
   namespace: argocd
 
 spec:
   project: default
 
   source:
-    repoURL: https://prometheus-community.github.io/helm-charts
-    chart: kube-prometheus-stack
-    targetRevision: 58.0.0   # یا latest stable
+    repoURL: https://github.com/saros-dev/devops-task-manager.git
+    targetRevision: main
+    path: k8s/helm/taskmanager
     helm:
-      releaseName: monitoring
+      valueFiles:
+        - values.yaml
 
   destination:
     server: https://kubernetes.default.svc
-    namespace: monitoring
+    namespace: taskmanager
 
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
-
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
