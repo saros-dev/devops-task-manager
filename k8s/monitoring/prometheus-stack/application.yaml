@@ -14,7 +14,7 @@ spec:
 
     helm:
       values: |
-        # 🚫 Disable admission webhooks (fix stuck jobs + CRD issues)
+        # 🚫 Disable everything that needs webhooks (fix stuck jobs)
         admissionWebhooks:
           enabled: false
 
@@ -24,22 +24,30 @@ spec:
             patch:
               enabled: false
 
-        # 🚀 DEV MODE: keep only core monitoring
+        # ❌ disable components that are failing image pulls
         kube-state-metrics:
-          enabled: false   # <<< مهم‌ترین fix تو
-
-        grafana:
-          enabled: true
-
-        prometheus:
-          prometheusSpec:
-            retention: 2d   # سبک‌تر از 7d برای dev
-
-        alertmanager:
-          enabled: false   # optional (برای dev خاموشش کن)
+          enabled: false
 
         nodeExporter:
+          enabled: false
+
+        alertmanager:
+          enabled: false
+
+        # ✅ keep only core prometheus
+        prometheus:
+          prometheusSpec:
+            retention: 2d
+            resources:
+              requests:
+                memory: 200Mi
+                cpu: 100m
+
+        # ✅ keep grafana only
+        grafana:
           enabled: true
+          image:
+            tag: 10.4.0
 
   destination:
     server: https://kubernetes.default.svc
