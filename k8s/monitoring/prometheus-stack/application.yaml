@@ -1,5 +1,4 @@
 apiVersion: argoproj.io/v1alpha1
-apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: monitoring
@@ -11,15 +10,18 @@ spec:
   source:
     repoURL: https://prometheus-community.github.io/helm-charts
     chart: kube-prometheus-stack
-    targetRevision: 57.2.0
+    targetRevision: 57.2.0   # stable version
 
     helm:
+      releaseName: monitoring
       skipCrds: true
 
       values: |
         prometheusOperator:
           admissionWebhooks:
             enabled: false
+            patch:
+              enabled: false   # 🔥 مهم‌ترین fix
 
         kube-state-metrics:
           enabled: true
@@ -50,3 +52,4 @@ spec:
 
     syncOptions:
       - CreateNamespace=true
+      - ServerSideApply=true

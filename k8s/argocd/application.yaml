@@ -1,6 +1,5 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
-
 metadata:
   name: monitoring
   namespace: argocd
@@ -11,7 +10,7 @@ spec:
   source:
     repoURL: https://prometheus-community.github.io/helm-charts
     chart: kube-prometheus-stack
-    targetRevision: 57.2.0
+    targetRevision: 57.2.0   # stable version
 
     helm:
       releaseName: monitoring
@@ -21,6 +20,12 @@ spec:
         prometheusOperator:
           admissionWebhooks:
             enabled: false
+            patch:
+              enabled: false   # 🔥 مهم‌ترین fix
+          tls:
+            enabled: false
+
+
 
         kube-state-metrics:
           enabled: true
@@ -51,3 +56,5 @@ spec:
 
     syncOptions:
       - CreateNamespace=true
+      - ServerSideApply=true
+      - Replace=true
