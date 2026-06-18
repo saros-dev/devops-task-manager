@@ -1,4 +1,5 @@
 apiVersion: argoproj.io/v1alpha1
+apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: monitoring
@@ -13,19 +14,20 @@ spec:
     targetRevision: 57.2.0
 
     helm:
-      skipCrds: true   # 🔥 مهم‌ترین fix
+      skipCrds: true
+
       values: |
         prometheusOperator:
           admissionWebhooks:
             enabled: false
 
         kube-state-metrics:
-          enabled: false
-      
-        kubeStateMetrics:
-          enabled: false
+          enabled: true
 
-
+          image:
+            registry: docker.io
+            repository: sarosdev/kube-state-metrics
+            tag: v2.12.0
 
         grafana:
           enabled: true
