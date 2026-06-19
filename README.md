@@ -1,237 +1,254 @@
-# DevOps Task Manager
+# 🚀 DevOps Task Manager – Cloud-Native GitOps Platform
 
-A production-oriented DevOps project built with Spring Boot, PostgreSQL, Docker, Kubernetes, and GitHub Actions.
-
-This project demonstrates modern DevOps practices including CI/CD automation, containerization, Kubernetes deployment, secrets management, rolling updates, health checks, and infrastructure best practices.
+A production-grade, end-to-end **DevOps + Cloud-Native system** showcasing modern software delivery practices using **GitOps, Kubernetes, observability stacks, and microservices architecture**.
 
 ---
 
-## Architecture
+# 🧭 Project Overview
 
-```text
-GitHub Actions
-      │
-      ▼
- Maven Build
-      │
-      ▼
- Docker Image Build
-      │
-      ▼
- Docker Hub
-      │
-      ▼
- Kubernetes (Kind)
-      │
-      ▼
- Spring Boot Backend
-      │
-      ▼
- PostgreSQL
+This project implements a fully automated **task management platform** deployed on Kubernetes using **ArgoCD (GitOps model)** with complete observability (metrics + logs + dashboards).
+
+It simulates a real-world production system including:
+
+* Frontend (TypeScript-based SPA)
+* Backend (Java Spring Boot microservice)
+* Containerized deployment using Docker
+* GitOps-based continuous delivery
+* Observability stack (Prometheus, Grafana, Loki)
+
+---
+
+# 🏗️ System Architecture
+
+## 🔷 High-Level Architecture
+
+```id="arch1"
+                        ┌──────────────────────┐
+                        │      GitHub Repo     │
+                        │ (Single Source Truth)│
+                        └──────────┬───────────┘
+                                   │ GitOps Sync
+                                   ▼
+                        ┌──────────────────────┐
+                        │       ArgoCD         │
+                        │  (GitOps Controller) │
+                        └──────────┬───────────┘
+                                   │
+        ┌──────────────────────────┼──────────────────────────┐
+        ▼                          ▼                          ▼
+┌──────────────┐        ┌────────────────┐        ┌────────────────────┐
+│ Frontend App │        │ Backend API    │        │ Observability      │
+│ (TypeScript) │        │ (Spring Boot)  │        │ Stack              │
+└──────┬───────┘        └───────┬────────┘        └─────────┬──────────┘
+       │                        │                          │
+       ▼                        ▼                          ▼
+   Docker Images          Docker Images          Prometheus + Loki + Grafana
+       │                        │                          │
+       └────────────── Kubernetes Cluster ────────────────┘
 ```
 
 ---
 
-## Tech Stack
+## 📊 Observability Pipeline
 
-### Backend
-- Java 21
-- Spring Boot
-- Spring Data JPA
-- Spring Security
-- Maven
-
-### Database
-- PostgreSQL
-
-### DevOps
-- Docker
-- Kubernetes (Kind)
-- GitHub Actions
-- Docker Hub
-
----
-
-## Features
-
-- REST API built with Spring Boot
-- PostgreSQL persistence layer
-- Dockerized application
-- Kubernetes deployment
-- Rolling updates
-- Liveness probes
-- Readiness probes
-- Resource requests and limits
-- Secrets management
-- Automated CI pipeline
-- Automated Docker image publishing
-
----
-
-## CI/CD Pipeline
-
-### Continuous Integration (CI)
-
-Triggered on Pull Requests to `main`.
-
-Pipeline steps:
-
-1. Checkout source code
-2. Setup Java 21
-3. Build application
-4. Run tests
-
-### Continuous Delivery (CD)
-
-Triggered on pushes to `main`.
-
-Pipeline steps:
-
-1. Build application
-2. Build Docker image
-3. Push image to Docker Hub
-
----
-
-## Kubernetes Components
-
-### Namespace
-
-```text
-taskmanager
-```
-
-### Deployments
-
-- Backend Deployment
-- PostgreSQL Deployment
-
-### Services
-
-- Backend Service
-- PostgreSQL Service
-
-### Secrets
-
-- Database credentials
-- Application secrets
-
----
-
-## Health Checks
-
-The application uses Kubernetes probes:
-
-### Readiness Probe
-
-```http
-/actuator/health
-```
-
-### Liveness Probe
-
-```http
-/actuator/health
+```id="obs1"
+Pods → Promtail → Loki → Grafana Dashboards
+                     │
+                     ▼
+              LogQL Query Engine
 ```
 
 ---
 
-## Resource Management
+## 📈 Metrics Pipeline
 
-Container resources are configured using:
-
-```yaml
-requests:
-  cpu: 250m
-  memory: 256Mi
-
-limits:
-  cpu: 500m
-  memory: 512Mi
+```id="metrics1"
+Spring Boot Metrics → Prometheus → Grafana Visualization
 ```
 
 ---
 
-## Local Development
+# ⚙️ Tech Stack
 
-### Build
+## 🖥️ Frontend
 
-```bash
-mvn clean package
-```
+* React (TypeScript)
+* Modern SPA architecture
+* Dockerized build
+* API integration with backend services
 
-### Run
+## ☕ Backend
 
-```bash
-java -jar target/*.jar
+* Java Spring Boot
+* RESTful APIs
+* Clean layered architecture
+* Kubernetes-ready deployment
+
+## 🐳 Containerization
+
+* Docker (multi-stage builds)
+* Image registry ready (DockerHub / private registry)
+
+## ☸️ Infrastructure
+
+* Kubernetes (Kind / K8s cluster)
+* Helm (package management)
+* ArgoCD (GitOps continuous deployment)
+
+## 📡 Observability
+
+* Prometheus (metrics collection)
+* Grafana (visualization & dashboards)
+* Loki (log aggregation)
+* Promtail (log shipping agent)
+
+---
+
+# 🔄 CI/CD & GitOps Flow
+
+```id="flow1"
+Developer Push
+      ↓
+GitHub Repository
+      ↓
+ArgoCD Sync Engine
+      ↓
+Kubernetes Deployment
+      ↓
+Running Microservices
+      ↓
+Observability Stack (Metrics + Logs + Dashboards)
 ```
 
 ---
 
-## Docker
+# 🧩 Microservices Architecture
 
-Build image:
+| Component  | Technology           | Responsibility         |
+| ---------- | -------------------- | ---------------------- |
+| Frontend   | TypeScript (React)   | User Interface         |
+| Backend    | Spring Boot (Java)   | Business Logic + APIs  |
+| Database   | (Pluggable)          | Data persistence layer |
+| Monitoring | Prometheus + Grafana | Metrics                |
+| Logging    | Loki + Promtail      | Log aggregation        |
 
-```bash
-docker build -t taskmanager-backend .
-```
+---
 
-Run container:
+# 📊 Observability Stack
 
-```bash
-docker run -p 8081:8081 taskmanager-backend
+## Metrics
+
+* CPU / Memory usage
+* Pod health monitoring
+* Application latency
+* JVM metrics (Spring Boot)
+
+## Logs
+
+* Centralized log collection via Promtail
+* Queryable logs using Loki (LogQL)
+* Namespace-based filtering
+
+---
+
+# 🔐 Key DevOps Principles Applied
+
+* GitOps (ArgoCD)
+* Infrastructure as Code mindset
+* Immutable container deployments
+* Declarative Kubernetes manifests
+* Observability-first architecture
+* Separation of concerns (Frontend / Backend / Infra)
+
+---
+
+# 📦 Project Structure
+
+```id="tree1"
+k8s/
+ ├── argocd/
+ ├── frontend/
+ ├── backend/
+ ├── monitoring/
+ │    ├── prometheus/
+ │    ├── grafana/
+ │    └── loki/
+ ├── helm-charts/
+ └── infrastructure/
 ```
 
 ---
 
-## Kubernetes Deployment
+# 📡 Example Loki Queries
 
-Apply all manifests:
-
-```bash
-kubectl apply -f k8s/
+```logql id="logql1"
+{namespace="taskmanager"}
 ```
 
-Check pods:
-
-```bash
-kubectl get pods -n taskmanager
-```
-
-Check services:
-
-```bash
-kubectl get svc -n taskmanager
+```logql id="logql2"
+{container="backend"} |= "error"
 ```
 
 ---
 
-## Future Improvements
+# 📊 Example Grafana Dashboards
 
-- Helm Charts
-- Terraform Infrastructure Provisioning
-- Prometheus Monitoring
-- Grafana Dashboards
-- ArgoCD GitOps
-- Automated Kubernetes Deployment
-- Multi-Environment Support (Dev / Stage / Prod)
+* Kubernetes Cluster Overview
+* Pod CPU / Memory Usage
+* Spring Boot Application Metrics
+* Log-based Error Tracking (Loki)
 
 ---
 
-## Project Goals
+# 🧠 Engineering Challenges Solved
 
-This project was created to practice and demonstrate:
-
-- Containerization
-- Kubernetes Administration
-- CI/CD Automation
-- Cloud-Native Development
-- DevOps Engineering Best Practices
+* ArgoCD CRD lifecycle & ApplicationSet sync issues
+* Grafana–Loki datasource integration debugging
+* Promtail log ingestion configuration
+* Kubernetes service discovery issues
+* Multi-service observability pipeline design
+* Docker image lifecycle & deployment consistency
 
 ---
 
-## Author
+# 🚀 What Makes This Project Production-Level
 
-saros-dev
+* Full GitOps deployment model
+* Multi-layer observability (metrics + logs)
+* Scalable microservices architecture
+* Kubernetes-native design
+* Infrastructure automation
+* Real-world debugging & system design
 
-Computer Engineer | DevOps Engineer 
+---
+
+# 🔮 Future Improvements
+
+* CI pipeline (GitHub Actions / GitLab CI)
+* Distributed tracing (Jaeger / OpenTelemetry)
+* Ingress controller (NGINX / Traefik)
+* TLS + Authentication layer
+* Alerting system (Alertmanager)
+* Multi-environment support (dev/staging/prod)
+
+---
+
+# 👨‍💻 Author
+
+**saros-dev**
+DevOps / Cloud-Native Engineer
+Focused on Kubernetes, GitOps, Observability & Scalable Systems
+
+---
+
+# ⭐ Impact
+
+This project demonstrates a **real-world production-grade DevOps ecosystem**, integrating:
+
+* Modern CI/CD practices
+* Kubernetes orchestration
+* Full observability stack
+* Microservices architecture
+* GitOps automation
+
+---
