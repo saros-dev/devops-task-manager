@@ -3,11 +3,44 @@ spring:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
 server:
   port: 8081
+
+management:
+  endpoints:
+    enabled-by-default: true
+
+    web:
+      base-path: /actuator
+      exposure:
+        include: health,info,prometheus
+
+  endpoint:
+    health:
+      enabled: true
+      show-details: always
+
+    info:
+      enabled: true
+
+    prometheus:
+      enabled: true
+
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+    tags:
+      application: taskmanager
