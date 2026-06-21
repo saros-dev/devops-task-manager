@@ -224,7 +224,7 @@ k8s/
 
 # 🔮 Future Improvements
 
-* CI pipeline (GitHub Actions / GitLab CI)
+* GitLab CI (Now Github Actions is Available)
 * Distributed tracing (Jaeger / OpenTelemetry)
 * Ingress controller (NGINX / Traefik)
 * TLS + Authentication layer
